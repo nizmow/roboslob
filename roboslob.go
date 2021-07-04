@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -13,15 +14,21 @@ import (
 )
 
 func main() {
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Llongfile)
+
+	db, err := gorm.Open(sqlite.Open("file:test.db?_loc=utc"), &gorm.Config{
+		NowFunc: func() time.Time {
+			return time.Now().UTC()
+		},
+	})
 	if err != nil {
 		panic("failed to connect database")
 	}
 	if err != nil {
 		panic(err)
 	}
-	db.AutoMigrate(&models.User{})
 	db.AutoMigrate(&models.Utterance{})
+	models.SetDB(db)
 
 	b, err := tb.NewBot(tb.Settings{
 		Token:  os.Getenv("TELEGRAM_BOT_TOKEN"),
@@ -33,15 +40,21 @@ func main() {
 
 	b.Handle(tb.OnText, func(m *tb.Message) {
 		if matches_utterance(m.Text) {
-			fmt.Println(m.Text)
+			models.AddUtterance(m.Text, m.Sender.ID)
+			log.Printf("User %s (%d) uttered '%s'", m.Sender.Username, m.Sender.ID, m.Text)
 		}
+	})
+
+	b.Handle("/count", func(m *tb.Message) {
+		count := models.GetCount(time.Now().UTC(), m.Sender.ID)
+		b.Send(m.Chat, fmt.Sprintf("%s has count %d", m.Sender.Username, count))
 	})
 
 	b.Start()
 }
 
 func matches_utterance(uttterance string) bool {
-	utterances_to_match := [...]string{"foo", "bar"}
+	utterances_to_match := [...]string{"🥝🎂", "🥝🍰"}
 
 	for _, u := range utterances_to_match {
 		if strings.Contains(uttterance, u) {

@@ -38,16 +38,15 @@ func main() {
 		panic(err)
 	}
 
-	b.Handle(tb.OnText, func(m *tb.Message) {
-		if matches_utterance(m.Text) {
-			models.AddUtterance(m.Text, m.Sender.ID)
-			log.Printf("User %s (%d) uttered '%s'", m.Sender.Username, m.Sender.ID, m.Text)
-		}
-	})
-
 	b.Handle("/count", func(m *tb.Message) {
 		count := models.GetCount(time.Now().UTC(), m.Sender.ID)
 		b.Send(m.Chat, fmt.Sprintf("%s has count %d", m.Sender.Username, count))
+	})
+
+	b.Handle(tb.OnText, func(m *tb.Message) {
+		if matches_utterance(m.Text) {
+			models.AddUtterance(m.Text, m.Sender.ID)
+		}
 	})
 
 	b.Start()

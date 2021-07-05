@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"log"
+	"time"
+)
 
 var timezone string = "Australia/Sydney"
 
@@ -17,8 +20,10 @@ type Utterance struct {
 }
 
 func AddUtterance(actualUtterance string, telegramUserID int) (int64, error) {
-	utterance := &Utterance{ActualUtterance: actualUtterance, TelegramUserID: telegramUserID, UtteredAt: time.Now().UTC(), UtteredAtTimezone: timezone}
+	utteranceTime := time.Now().UTC()
+	utterance := &Utterance{ActualUtterance: actualUtterance, TelegramUserID: telegramUserID, UtteredAt: utteranceTime, UtteredAtTimezone: timezone}
 	result := DB.Create(utterance)
+	log.Printf("Adding utterance for %d at %s", telegramUserID, utteranceTime)
 	return utterance.ID, result.Error
 }
 
@@ -28,6 +33,7 @@ func GetCount(atTime time.Time, telegramUserID int) int64 {
 	startUTC, endUTC := getStartAndEndOfDayInLocation(timeInZone, loc)
 	var count int64
 	DB.Model(&Utterance{}).Where("uttered_at BETWEEN ? and ?", startUTC, endUTC).Count(&count)
+	log.Printf("Returning count of %d for %d between %s - %s", count, telegramUserID, startUTC, endUTC)
 	return count
 }
 

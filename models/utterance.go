@@ -32,7 +32,7 @@ func GetCount(atTime time.Time, telegramUserID int) int64 {
 	timeInZone := atTime.In(loc)
 	startUTC, endUTC := getStartAndEndOfDayInLocation(timeInZone, loc)
 	var count int64
-	DB.Model(&Utterance{}).Where("uttered_at BETWEEN ? and ?", startUTC, endUTC).Count(&count)
+	DB.Model(&Utterance{TelegramUserID: telegramUserID}).Where("uttered_at BETWEEN ? and ?", startUTC, endUTC).Count(&count)
 	log.Printf("Returning count of %d for %d between %s - %s", count, telegramUserID, startUTC, endUTC)
 	return count
 }

@@ -11,15 +11,26 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Llongfile)
+	gormLogger := logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+		logger.Config{
+			SlowThreshold:             time.Second, // Slow SQL threshold
+			LogLevel:                  logger.Info, // Log level
+			IgnoreRecordNotFoundError: true,        // Ignore ErrRecordNotFound error for logger
+			Colorful:                  false,       // Disable color
+		},
+	)
 
 	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{
 		NowFunc: func() time.Time {
 			return time.Now().UTC()
 		},
+		Logger: gormLogger,
 	})
 	if err != nil {
 		panic("failed to connect database")
@@ -49,6 +60,7 @@ func main() {
 		}
 	})
 
+	log.Printf("roboslob ready to go!")
 	b.Start()
 }
 

@@ -16,7 +16,7 @@ import (
 func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Llongfile)
 
-	db, err := gorm.Open(sqlite.Open("file:test.db?_loc=utc"), &gorm.Config{
+	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{
 		NowFunc: func() time.Time {
 			return time.Now().UTC()
 		},

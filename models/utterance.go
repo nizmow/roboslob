@@ -15,7 +15,7 @@ type Utterance struct {
 
 	TelegramUserID    int `gorm:"index"`
 	ActualUtterance   string
-	UtteredAt         time.Time
+	UtteredAt         time.Time `gorm:"index"`
 	UtteredAtTimezone string
 }
 

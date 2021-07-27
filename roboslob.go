@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -52,6 +53,16 @@ func main() {
 	b.Handle("/count", func(m *tb.Message) {
 		count := models.GetCount(time.Now().UTC(), m.Sender.ID)
 		b.Send(m.Chat, fmt.Sprintf("%s has count %d", m.Sender.Username, count))
+	})
+
+	b.Handle("/7days", func(m *tb.Message) {
+		daysCount := models.GetLastSevenDays(time.Now().UTC(), m.Sender.ID)
+		log.Println(daysCount)
+		out, _ := json.Marshal(daysCount)
+		b.Send(m.Chat, fmt.Sprintf("%s", out))
+		// b.Send(m.Chat, &tb.Photo{
+		// 	File: tb.FromReader()
+		// })
 	})
 
 	b.Handle(tb.OnText, func(m *tb.Message) {

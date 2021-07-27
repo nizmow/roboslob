@@ -57,6 +57,8 @@ func main() {
 	b.Handle(tb.OnText, func(m *tb.Message) {
 		if matches_utterance(m.Text) {
 			models.AddUtterance(m.Text, m.Sender.ID)
+			count := models.GetCount(time.Now().UTC(), m.Sender.ID)
+			b.Send(m.Chat, fmt.Sprintf("%d", count), &tb.SendOptions{ReplyTo: m})
 		}
 	})
 
